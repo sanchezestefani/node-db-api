@@ -3,27 +3,34 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 const pool = mysql.createPool({
-    host: process.env.MYSQLHOST,
-    port: Number(process.env.MYSQLPORT),
-    user: process.env.MYSQLUSER,
-    password: process.env.MYSQLPASSWORD,
-    database: process.env.MYSQLDATABASE,
-    ssl: {
-        rejectUnauthorized: false
-    },
+    host: process.env.MYSQLHOST || process.env.DB_HOST,
+    port: Number(process.env.MYSQLPORT || process.env.DB_PORT),
+    user: process.env.MYSQLUSER || process.env.DB_USER,
+    password: process.env.MYSQLPASSWORD || process.env.DB_PASSWORD,
+    database: process.env.MYSQLDATABASE || process.env.DB_NAME,
+    ssl: process.env.MYSQLHOST ? { rejectUnauthorized: false } : undefined,
     waitForConnections: true,
     connectionLimit: 10,
     queueLimit: 0
+});
+
+pool.getConnection((err, conn) => {
+    if (err) {
+        console.log("❌ ERROR CONECTANDO A MYSQL:", err);
+    } else {
+        console.log("✅ CONECTADO A MYSQL");
+        conn.release();
+    }
 });
 
 var alumnosDB = {};
 
 alumnosDB.insertar = function insertar(alumno) {
     return new Promise((resolve, reject) => {
-        let sqlConsulta = "INSERT INTO alumnos SET ?";
-        pool.query(sqlConsulta, alumno, (err, res) => {
+        let sql = "INSERT INTO alumnos SET ?";
+        pool.query(sql, alumno, (err, res) => {
             if (err) {
-                console.log("Error al insertar: " + err);
+                console.log("❌ Error insertar:", err);
                 reject(err);
             } else {
                 resolve(res.insertId);
@@ -32,86 +39,56 @@ alumnosDB.insertar = function insertar(alumno) {
     });
 };
 
-alumnosDB.mostrarTodos = function mostrarTodos() {
+alumnosDB.mostrarTodos = function () {
     return new Promise((resolve, reject) => {
-        let sqlConsulta = "SELECT * FROM alumnos";
-        pool.query(sqlConsulta, (err, resultado) => {
-            if (err) {
-                console.log("Error al obtener alumnos: " + err);
-                reject(err);
-            } else {
-                resolve(resultado);
-            }
+        pool.query("SELECT * FROM alumnos", (err, res) => {
+            if (err) reject(err);
+            else resolve(res);
         });
     });
 };
 
-alumnosDB.buscarPorId = function buscarPorId(id) {
+alumnosDB.buscarPorId = function (id) {
     return new Promise((resolve, reject) => {
-        let sqlConsulta = "SELECT * FROM alumnos WHERE id = ?";
-        pool.query(sqlConsulta, [id], (err, resultado) => {
-            if (err) {
-                console.log("Error al buscar por ID: " + err);
-                reject(err);
-            } else {
-                resolve(resultado);
-            }
+        pool.query("SELECT * FROM alumnos WHERE id = ?", [id], (err, res) => {
+            if (err) reject(err);
+            else resolve(res);
         });
     });
 };
 
-alumnosDB.buscarPorMatricula = function buscarPorMatricula(matricula) {
+alumnosDB.buscarPorMatricula = function (matricula) {
     return new Promise((resolve, reject) => {
-        let sqlConsulta = "SELECT * FROM alumnos WHERE matricula = ?";
-        pool.query(sqlConsulta, [matricula], (err, resultado) => {
-            if (err) {
-                console.log("Error al buscar por matrícula: " + err);
-                reject(err);
-            } else {
-                resolve(resultado);
-            }
+        pool.query("SELECT * FROM alumnos WHERE matricula = ?", [matricula], (err, res) => {
+            if (err) reject(err);
+            else resolve(res);
         });
     });
 };
 
-alumnosDB.borrarPorId = function borrarPorId(id) {
+alumnosDB.borrarPorId = function (id) {
     return new Promise((resolve, reject) => {
-        let sqlConsulta = "DELETE FROM alumnos WHERE id = ?";
-        pool.query(sqlConsulta, [id], (err, resultado) => {
-            if (err) {
-                console.log("Error al borrar alumno: " + err);
-                reject(err);
-            } else {
-                resolve("Alumno eliminado correctamente");
-            }
+        pool.query("DELETE FROM alumnos WHERE id = ?", [id], (err) => {
+            if (err) reject(err);
+            else resolve();
         });
     });
 };
 
-alumnosDB.actualizarPorId = function actualizarPorId(id, nuevoAlumno) {
+alumnosDB.actualizarPorId = function (id, alumno) {
     return new Promise((resolve, reject) => {
-        let sqlConsulta = "UPDATE alumnos SET ? WHERE id = ?";
-        pool.query(sqlConsulta, [nuevoAlumno, id], (err, resultado) => {
-            if (err) {
-                console.log("Error al actualizar alumno: " + err);
-                reject(err);
-            } else {
-                resolve("Alumno actualizado correctamente");
-            }
+        pool.query("UPDATE alumnos SET ? WHERE id = ?", [alumno, id], (err) => {
+            if (err) reject(err);
+            else resolve();
         });
     });
 };
 
-alumnosDB.cambiarStatus = function cambiarStatus(id) {
+alumnosDB.cambiarStatus = function (id) {
     return new Promise((resolve, reject) => {
-        let sqlConsulta = "UPDATE alumnos SET status = NOT status WHERE id = ?";
-        pool.query(sqlConsulta, [id], (err, resultado) => {
-            if (err) {
-                console.log("Error al cambiar status: " + err);
-                reject(err);
-            } else {
-                resolve("Status actualizado correctamente");
-            }
+        pool.query("UPDATE alumnos SET status = NOT status WHERE id = ?", [id], (err) => {
+            if (err) reject(err);
+            else resolve();
         });
     });
 };
