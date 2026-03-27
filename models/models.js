@@ -3,11 +3,10 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 var conexion = mysql.createConnection({
-    host: process.env.MYSQLHOST,
-port: Number(process.env.MYSQLPORT),
-    user: process.env.MYSQLUSER,
-    password: process.env.MYSQLPASSWORD,
-    database: process.env.MYSQLDATABASE
+    uri: process.env.MYSQL_URL,
+    ssl: {
+        rejectUnauthorized: false
+    }
 });
 
 conexion.connect((err) => {
