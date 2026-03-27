@@ -8,9 +8,12 @@ router.get("/todos", async (req, res) => {
         const alumnos = await alumnosDB.mostrarTodos();
         res.json(alumnos);
     } catch (error) {
+        console.log("ERROR GET TODOS:", error);
+
         res.status(500).json({
             error: "Error al obtener alumnos",
-            detalle: error.message
+            detalle: error,
+            mensaje: error?.message || "Sin mensaje"
         });
     }
 });
@@ -24,9 +27,12 @@ router.get("/matricula/:matricula", async (req, res) => {
             res.status(404).json({ error: "Alumno no encontrado" });
         }
     } catch (error) {
+        console.log("ERROR GET MATRICULA:", error);
+
         res.status(500).json({
             error: "Error al buscar alumno por matrícula",
-            detalle: error.message
+            detalle: error,
+            mensaje: error?.message || "Sin mensaje"
         });
     }
 });
@@ -40,15 +46,20 @@ router.get("/:id", async (req, res) => {
             res.status(404).json({ error: "Alumno no encontrado" });
         }
     } catch (error) {
+        console.log("ERROR GET ID:", error);
+
         res.status(500).json({
             error: "Error al buscar alumno",
-            detalle: error.message
+            detalle: error,
+            mensaje: error?.message || "Sin mensaje"
         });
     }
 });
 
 router.post("/", async (req, res) => {
     try {
+        console.log("BODY:", req.body);
+
         const nuevoAlumno = req.body;
         const id = await alumnosDB.insertar(nuevoAlumno);
 
@@ -57,17 +68,21 @@ router.post("/", async (req, res) => {
             mensaje: "Alumno agregado correctamente"
         });
     } catch (error) {
-        console.log("ERROR POST:", error);
+        console.log("ERROR POST COMPLETO:", error);
 
         res.status(500).json({
             error: "Error al insertar alumno",
-            detalle: error.message
+            detalle: error,
+            mensaje: error?.message || "Sin mensaje",
+            stack: error?.stack || "Sin stack"
         });
     }
 });
 
 router.put("/:id", async (req, res) => {
     try {
+        console.log("BODY UPDATE:", req.body);
+
         const id = req.params.id;
         const datosActualizados = req.body;
 
@@ -75,9 +90,12 @@ router.put("/:id", async (req, res) => {
 
         res.json({ mensaje: "Alumno actualizado correctamente" });
     } catch (error) {
+        console.log("ERROR PUT:", error);
+
         res.status(500).json({
             error: "Error al actualizar alumno",
-            detalle: error.message
+            detalle: error,
+            mensaje: error?.message || "Sin mensaje"
         });
     }
 });
@@ -90,9 +108,12 @@ router.delete("/:id", async (req, res) => {
 
         res.json({ mensaje: "Alumno eliminado correctamente" });
     } catch (error) {
+        console.log("ERROR DELETE:", error);
+
         res.status(500).json({
             error: "Error al eliminar alumno",
-            detalle: error.message
+            detalle: error,
+            mensaje: error?.message || "Sin mensaje"
         });
     }
 });
@@ -105,9 +126,12 @@ router.patch("/:id/status", async (req, res) => {
 
         res.json({ mensaje: "Estado del alumno actualizado correctamente" });
     } catch (error) {
+        console.log("ERROR PATCH:", error);
+
         res.status(500).json({
             error: "Error al cambiar estado del alumno",
-            detalle: error.message
+            detalle: error,
+            mensaje: error?.message || "Sin mensaje"
         });
     }
 });
