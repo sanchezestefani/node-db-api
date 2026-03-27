@@ -2,19 +2,14 @@ import mysql from 'mysql2';
 import dotenv from 'dotenv';
 dotenv.config();
 
-var conexion = mysql.createConnection({
+const pool = mysql.createPool({
     uri: process.env.MYSQL_URL,
     ssl: {
         rejectUnauthorized: false
-    }
-});
-
-conexion.connect((err) => {
-    if (err) {
-        console.log("Surgió un error al conectar: " + err);
-    } else {
-        console.log("Conexión a la base de datos exitosa");
-    }
+    },
+    waitForConnections: true,
+    connectionLimit: 10,
+    queueLimit: 0
 });
 
 var alumnosDB = {};
@@ -22,7 +17,7 @@ var alumnosDB = {};
 alumnosDB.insertar = function insertar(alumno) {
     return new Promise((resolve, reject) => {
         let sqlConsulta = "INSERT INTO alumnos SET ?";
-        conexion.query(sqlConsulta, alumno, (err, res) => {
+        pool.query(sqlConsulta, alumno, (err, res) => {
             if (err) {
                 console.log("Error al insertar: " + err);
                 reject(err);
@@ -36,7 +31,7 @@ alumnosDB.insertar = function insertar(alumno) {
 alumnosDB.mostrarTodos = function mostrarTodos() {
     return new Promise((resolve, reject) => {
         let sqlConsulta = "SELECT * FROM alumnos";
-        conexion.query(sqlConsulta, (err, resultado) => {
+        pool.query(sqlConsulta, (err, resultado) => {
             if (err) {
                 console.log("Error al obtener alumnos: " + err);
                 reject(err);
@@ -50,7 +45,7 @@ alumnosDB.mostrarTodos = function mostrarTodos() {
 alumnosDB.buscarPorId = function buscarPorId(id) {
     return new Promise((resolve, reject) => {
         let sqlConsulta = "SELECT * FROM alumnos WHERE id = ?";
-        conexion.query(sqlConsulta, [id], (err, resultado) => {
+        pool.query(sqlConsulta, [id], (err, resultado) => {
             if (err) {
                 console.log("Error al buscar por ID: " + err);
                 reject(err);
@@ -64,7 +59,7 @@ alumnosDB.buscarPorId = function buscarPorId(id) {
 alumnosDB.buscarPorMatricula = function buscarPorMatricula(matricula) {
     return new Promise((resolve, reject) => {
         let sqlConsulta = "SELECT * FROM alumnos WHERE matricula = ?";
-        conexion.query(sqlConsulta, [matricula], (err, resultado) => {
+        pool.query(sqlConsulta, [matricula], (err, resultado) => {
             if (err) {
                 console.log("Error al buscar por matrícula: " + err);
                 reject(err);
@@ -78,7 +73,7 @@ alumnosDB.buscarPorMatricula = function buscarPorMatricula(matricula) {
 alumnosDB.borrarPorId = function borrarPorId(id) {
     return new Promise((resolve, reject) => {
         let sqlConsulta = "DELETE FROM alumnos WHERE id = ?";
-        conexion.query(sqlConsulta, [id], (err, resultado) => {
+        pool.query(sqlConsulta, [id], (err, resultado) => {
             if (err) {
                 console.log("Error al borrar alumno: " + err);
                 reject(err);
@@ -92,7 +87,7 @@ alumnosDB.borrarPorId = function borrarPorId(id) {
 alumnosDB.actualizarPorId = function actualizarPorId(id, nuevoAlumno) {
     return new Promise((resolve, reject) => {
         let sqlConsulta = "UPDATE alumnos SET ? WHERE id = ?";
-        conexion.query(sqlConsulta, [nuevoAlumno, id], (err, resultado) => {
+        pool.query(sqlConsulta, [nuevoAlumno, id], (err, resultado) => {
             if (err) {
                 console.log("Error al actualizar alumno: " + err);
                 reject(err);
@@ -106,7 +101,7 @@ alumnosDB.actualizarPorId = function actualizarPorId(id, nuevoAlumno) {
 alumnosDB.cambiarStatus = function cambiarStatus(id) {
     return new Promise((resolve, reject) => {
         let sqlConsulta = "UPDATE alumnos SET status = NOT status WHERE id = ?";
-        conexion.query(sqlConsulta, [id], (err, resultado) => {
+        pool.query(sqlConsulta, [id], (err, resultado) => {
             if (err) {
                 console.log("Error al cambiar status: " + err);
                 reject(err);
