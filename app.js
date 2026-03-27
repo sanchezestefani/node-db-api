@@ -11,6 +11,6 @@ app.use('/alumnos', router);
 
 const puerto = process.env.PORT || 3000;
 
-app.listen(puerto, () => {
+app.listen(puerto, '0.0.0.0', () => {
     console.log("Servidor corriendo en puerto " + puerto);
 });
